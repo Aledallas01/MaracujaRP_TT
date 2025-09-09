@@ -18,10 +18,13 @@ async function getTranscript(ticketId: string): Promise<Transcript | null> {
       ? `https://${process.env.VERCEL_URL}`
       : process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
-    const response = await fetch(`${baseUrl}/api/get-transcript/${ticketId}`, {
-      cache: "no-store",
-      headers: { "Content-Type": "application/json" },
-    });
+    const response = await fetch(
+      `https://maracuja-rp-tt-srcf.vercel.app/api/get-transcript/${ticketId}`,
+      {
+        cache: "no-store",
+        headers: { "Content-Type": "application/json" },
+      }
+    );
 
     if (!response.ok) return null;
 

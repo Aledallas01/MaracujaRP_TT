@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -15,14 +15,15 @@ interface Message {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    
-    const { ticketId, messages }: { ticketId: string; messages: Message[] } = body;
+
+    const { ticketId, messages }: { ticketId: string; messages: Message[] } =
+      body;
 
     // Validate required fields
     if (!ticketId || !messages || !Array.isArray(messages)) {
       return NextResponse.json(
-        { 
-          error: 'Missing required fields: ticketId and messages array' 
+        {
+          error: "Missing required fields: ticketId and messages array",
         },
         { status: 400 }
       );
@@ -32,8 +33,8 @@ export async function POST(request: NextRequest) {
     for (const message of messages) {
       if (!message.user || !message.content || !message.timestamp) {
         return NextResponse.json(
-          { 
-            error: 'Each message must have user, content, and timestamp fields' 
+          {
+            error: "Each message must have user, content, and timestamp fields",
           },
           { status: 400 }
         );
@@ -42,46 +43,43 @@ export async function POST(request: NextRequest) {
 
     // Check if transcript already exists
     const { data: existingTranscript, error: checkError } = await supabase
-      .from('transcripts')
-      .select('id')
-      .eq('ticket_id', ticketId)
+      .from("transcripts")
+      .select("id")
+      .eq("ticket_id", ticketId)
       .single();
 
-    if (checkError && checkError.code !== 'PGRST116') {
-      console.error('Error checking existing transcript:', checkError);
-      return NextResponse.json(
-        { error: 'Database error' },
-        { status: 500 }
-      );
+    if (checkError && checkError.code !== "PGRST116") {
+      console.error("Error checking existing transcript:", checkError);
+      return NextResponse.json({ error: "Database error" }, { status: 500 });
     }
 
     if (existingTranscript) {
       return NextResponse.json(
-        { error: 'Transcript with this ticket ID already exists' },
+        { error: "Transcript with this ticket ID already exists" },
         { status: 409 }
       );
     }
 
     // Get the first user as the main username (usually the ticket creator)
-    const username = messages[0]?.user || 'Unknown';
+    const username = messages[0]?.user || "Unknown";
 
     // Insert new transcript
     const { data, error } = await supabase
-      .from('transcripts')
+      .from("transcripts")
       .insert([
         {
           ticket_id: ticketId,
           username: username,
           messages: messages,
-        }
+        },
       ])
       .select()
       .single();
 
     if (error) {
-      console.error('Supabase insert error:', error);
+      console.error("Supabase insert error:", error);
       return NextResponse.json(
-        { error: 'Failed to create transcript' },
+        { error: "Failed to create transcript" },
         { status: 500 }
       );
     }
@@ -89,13 +87,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       ticketId: data.ticket_id,
-      message: 'Transcript uploaded successfully'
+      message: "Transcript uploaded successfully",
     });
-
   } catch (error) {
-    console.error('API Error:', error);
+    console.error("API Error:", error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }
@@ -103,7 +100,7 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   return NextResponse.json(
-    { message: 'Upload transcript endpoint - use POST method' },
+    { message: "Upload transcript endpoint - use POST method" },
     { status: 405 }
   );
 }

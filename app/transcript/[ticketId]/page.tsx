@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Calendar } from "lucide-react";
+import { createClient } from "@supabase/supabase-js";
 
-// Force dynamic rendering for this page
 export const dynamic = "force-dynamic";
 
 interface Transcript {
@@ -12,28 +12,24 @@ interface Transcript {
   html_content: string;
 }
 
+// Supabase client con SERVICE ROLE KEY (server-only)
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
+
 async function getTranscript(ticketId: string): Promise<Transcript | null> {
-  try {
-    const baseUrl = process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const { data, error } = await supabase
+    .from("transcripts")
+    .select("*")
+    .eq("ticket_id", ticketId)
+    .single();
 
-    const response = await fetch(
-      `https://maracuja-rp-tt-srcf.vercel.app/api/get-transcript/${ticketId}`,
-      {
-        cache: "no-store",
-        headers: { "Content-Type": "application/json" },
-      }
-    );
-
-    if (!response.ok) return null;
-
-    const data = await response.json();
-    return data.transcript;
-  } catch (error) {
-    console.error("Error fetching transcript:", error);
+  if (error || !data) {
+    console.error("Transcript fetch error:", error);
     return null;
   }
+  return data;
 }
 
 export default async function TranscriptPage({
@@ -47,15 +43,14 @@ export default async function TranscriptPage({
     notFound();
   }
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("it-IT", {
+  const formatDate = (dateString: string) =>
+    new Date(dateString).toLocaleDateString("it-IT", {
       year: "numeric",
       month: "long",
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
     });
-  };
 
   return (
     <div className="space-y-6">

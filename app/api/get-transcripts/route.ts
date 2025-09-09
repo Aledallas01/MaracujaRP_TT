@@ -3,12 +3,10 @@ import { createClient } from "@supabase/supabase-js";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-export async function GET(request: NextRequest) {
+export async function GET(req: NextRequest) {
   try {
-    // Query Supabase for all transcripts
     const { data, error } = await supabase
       .from("transcripts")
       .select("id, ticket_id, html_content, created_at")
@@ -19,19 +17,19 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Database error" }, { status: 500 });
     }
 
-    // Calcolo lunghezza HTML come "message_count" solo a titolo informativo
+    // Aggiungo lunghezza HTML come "html_length"
     const transcriptsWithInfo =
-      data?.map((transcript) => ({
-        ...transcript,
-        html_length: transcript.html_content?.length || 0,
+      data?.map((t) => ({
+        ...t,
+        html_length: t.html_content?.length || 0,
       })) || [];
 
     return NextResponse.json({
       success: true,
       transcripts: transcriptsWithInfo,
     });
-  } catch (error) {
-    console.error("API Error:", error);
+  } catch (err) {
+    console.error("API Error:", err);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
   try {
     const { data, error } = await supabase
       .from("transcripts")
-      .select("id, ticket_id, html_content, created_at")
+      .select("*")
       .order("created_at", { ascending: false });
 
     if (error) {

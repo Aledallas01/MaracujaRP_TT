@@ -4,6 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+const dominio = process.env.NEXT_PUBLIC_DOMINIO!;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 function authenticateRequest(request: NextRequest): boolean {
@@ -93,7 +94,7 @@ export async function POST(request: NextRequest) {
     // 5️⃣ Risposta
     return NextResponse.json({
       success: true,
-      url: `https://tuo-dominio.com/transcripts/${ticketId}.html`,
+      url: `https://${dominio}/transcripts/${ticketId}.html`,
       message: "Transcript caricato con successo",
     });
   } catch (err: any) {

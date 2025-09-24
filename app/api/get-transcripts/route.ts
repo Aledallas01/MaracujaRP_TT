@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
   try {
     const { data, error } = await supabase
       .from("transcripts")
-      .select("*")
+      .select("*", { count: "exact" })
       .order("created_at", { ascending: false });
 
     if (error) {

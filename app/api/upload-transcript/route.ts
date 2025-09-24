@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
     // 5️⃣ Risposta
     return NextResponse.json({
       success: true,
-      url: `https://${dominio}/transcripts/${ticketId}`,
+      url: `https://${dominio}/transcript/${ticketId}`,
       message: existingTranscript
         ? "Transcript aggiornato con successo."
         : "Transcript caricato con successo.",

@@ -66,25 +66,32 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // 4️⃣ Inserisci o aggiorna transcript con HTML
+    let upsertResult;
     if (existingTranscript) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Transcript con questo ticket ID esiste già",
-        },
-        { status: 409 }
-      );
+      // Aggiorna il transcript esistente
+      const { data, error } = await supabase
+        .from("transcripts")
+        .update({ html_content: htmlContent })
+        .eq("ticket_id", ticketId)
+        .select()
+        .single();
+      upsertResult = { data, error };
+    } else {
+      // Inserisci nuovo transcript
+      const { data, error } = await supabase
+        .from("transcripts")
+        .insert([{ ticket_id: ticketId, html_content: htmlContent }])
+        .select()
+        .single();
+      upsertResult = { data, error };
     }
 
-    // 4️⃣ Inserisci nuovo transcript con HTML
-    const { data, error } = await supabase
-      .from("transcripts")
-      .insert([{ ticket_id: ticketId, html_content: htmlContent }])
-      .select()
-      .single();
-
-    if (error) {
-      console.error("Errore inserimento transcript:", error);
+    if (upsertResult.error) {
+      console.error(
+        "Errore inserimento/aggiornamento transcript:",
+        upsertResult.error
+      );
       return NextResponse.json(
         { success: false, message: "Errore nel DB" },
         { status: 500 }
@@ -94,8 +101,10 @@ export async function POST(request: NextRequest) {
     // 5️⃣ Risposta
     return NextResponse.json({
       success: true,
-      url: `https://${dominio}/transcripts/${ticketId}.html`,
-      message: "Transcript caricato con successo",
+      url: `https://${dominio}/transcripts/${ticketId}`,
+      message: existingTranscript
+        ? "Transcript aggiornato con successo."
+        : "Transcript caricato con successo.",
     });
   } catch (err: any) {
     console.error("API Error:", err);

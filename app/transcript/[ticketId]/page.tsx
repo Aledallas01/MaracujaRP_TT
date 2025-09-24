@@ -88,7 +88,7 @@ export default async function TranscriptPage({
       <div className="text-center text-sm text-gray-500">
         <p>
           Transcript generato il {formatDate(transcript.created_at)} •
-          MaracujaRP Server
+          MaracujaRP Transcript
         </p>
       </div>
     </div>

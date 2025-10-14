@@ -53,7 +53,7 @@ export default async function TranscriptPage({
     });
 
   return (
-    <div className="space-y-6">
+    <>
       {/* Header */}
       <div className="flex items-center space-x-4 mb-6">
         <Link
@@ -91,6 +91,6 @@ export default async function TranscriptPage({
           MaracujaRP Transcript
         </p>
       </div>
-    </div>
+    </>
   );
 }

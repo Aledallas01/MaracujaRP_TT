@@ -16,8 +16,7 @@ export async function GET(req: NextRequest) {
     // 🔹 Query principale
     const { data, error, count } = await supabase
       .from("transcripts")
-      // seleziona solo i campi necessari per migliorare le performance
-      .select("id, ticket_id, created_at", { count: "exact" })
+      .select("id, ticket_id, created_at, html_content", { count: "exact" })
       .order("created_at", { ascending: false })
       .range(from, to);
 
@@ -41,9 +40,16 @@ export async function GET(req: NextRequest) {
       });
     }
 
+    // 🔹 Aggiunge info utili (es. lunghezza HTML)
+    const transcriptsWithInfo = data.map((t) => ({
+      ...t,
+      html_length: t.html_content?.length || 0,
+    }));
+
     // 🔹 Risposta finale
     return NextResponse.json({
       success: true,
+      transcripts: transcriptsWithInfo,
       count,
       page,
       totalPages: Math.ceil((count || 0) / limit),

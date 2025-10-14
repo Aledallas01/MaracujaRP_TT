@@ -2,24 +2,20 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { FileText, Upload, Calendar, Code } from "lucide-react";
+import { FileText, Calendar, Code, Search } from "lucide-react";
 
 interface Transcript {
   id: string;
   ticket_id: string;
   created_at: string;
   html_content: string;
-  html_length?: number; // calcolato lato client solo per info
+  html_length?: number;
 }
 
 export default function HomePage() {
   const [transcripts, setTranscripts] = useState<Transcript[]>([]);
   const [loading, setLoading] = useState(true);
-  const [uploading, setUploading] = useState(false);
-  const [uploadData, setUploadData] = useState({
-    ticketId: "",
-    htmlContent: "",
-  });
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     fetchTranscripts();
@@ -30,14 +26,11 @@ export default function HomePage() {
       const response = await fetch("/api/get-transcripts");
       if (response.ok) {
         const data = await response.json();
-
-        // aggiungo lunghezza HTML come info
         const transcriptsWithInfo =
           data.transcripts?.map((t: Transcript) => ({
             ...t,
             html_length: t.html_content?.length || 0,
           })) || [];
-
         setTranscripts(transcriptsWithInfo);
       }
     } catch (error) {
@@ -47,54 +40,51 @@ export default function HomePage() {
     }
   };
 
-  const handleUpload = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!uploadData.ticketId || !uploadData.htmlContent) return;
-
-    setUploading(true);
-    try {
-      const response = await fetch("/api/upload-transcript", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ticketId: uploadData.ticketId,
-          htmlContent: uploadData.htmlContent,
-        }),
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        alert(`Transcript caricato con successo! ID: ${result.ticketId}`);
-        setUploadData({ ticketId: "", htmlContent: "" });
-        fetchTranscripts();
-      } else {
-        const error = await response.json();
-        alert(`Errore: ${error.error}`);
-      }
-    } catch (error) {
-      alert("Errore durante l'upload del transcript");
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("it-IT", {
+  const formatDate = (dateString: string) =>
+    new Date(dateString).toLocaleDateString("it-IT", {
       year: "numeric",
       month: "short",
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
     });
-  };
+
+  // filtriamo i transcript in base alla ricerca
+  const filteredTranscripts = transcripts.filter((t) =>
+    t.ticket_id.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
-    <div className="space-y-8">
-      {/* Transcripts List */}
-      <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+    <div className="min-h-screen bg-gradient-to-b from-gray-950 to-gray-900 p-6 text-white space-y-10">
+      {/* Header */}
+      <div className="text-center space-y-2">
+        <h1 className="text-3xl font-extrabold tracking-tight">
+          📄 Transcript Disponibili
+        </h1>
+        <p className="text-gray-400 text-sm">
+          Visualizza tutti i transcript salvati nel sistema.
+        </p>
+      </div>
+
+      {/* Barra di ricerca */}
+      <div className="max-w-3xl mx-auto">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Cerca per Ticket ID..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-gray-900 border border-gray-700 rounded-lg px-10 py-2 text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500"
+          />
+        </div>
+      </div>
+
+      {/* Lista Transcript */}
+      <div className="bg-gray-800/70 rounded-xl p-6 border border-gray-700/60 shadow-lg backdrop-blur-sm max-w-6xl mx-auto">
         <div className="flex items-center mb-6">
           <FileText className="h-6 w-6 text-orange-400 mr-2" />
-          <h2 className="text-xl font-semibold">Transcript Disponibili</h2>
+          <h2 className="text-xl font-semibold">Elenco Transcript</h2>
         </div>
 
         {loading ? (
@@ -104,39 +94,47 @@ export default function HomePage() {
               Caricamento transcript...
             </span>
           </div>
-        ) : transcripts.length === 0 ? (
-          <div className="text-center py-8 text-gray-400">
+        ) : filteredTranscripts.length === 0 ? (
+          <div className="text-center py-12 text-gray-400">
             <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>Nessun transcript disponibile</p>
-            <p className="text-sm mt-2">
-              Carica il primo transcript usando il form sopra
-            </p>
+            <p className="text-lg font-medium">Nessun transcript trovato</p>
+            {searchQuery && (
+              <p className="text-sm mt-2 opacity-80">
+                Nessun risultato per "
+                <span className="font-semibold">{searchQuery}</span>"
+              </p>
+            )}
+            {!searchQuery && (
+              <p className="text-sm mt-2 opacity-80">
+                Non ci sono ancora transcript caricati nel sistema.
+              </p>
+            )}
           </div>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {transcripts.map((transcript) => (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {filteredTranscripts.map((transcript) => (
               <Link
                 key={transcript.id}
                 href={`/transcript/${transcript.ticket_id}`}
-                className="block bg-gray-700 hover:bg-gray-600 rounded-lg p-4 border border-gray-600 hover:border-orange-500 transition-all duration-200"
+                className="group bg-gray-900/60 border border-gray-700 rounded-lg p-5 hover:border-orange-500 hover:bg-gray-800 transition-all duration-200 shadow-md hover:shadow-lg hover:-translate-y-1"
               >
                 <div className="flex items-start justify-between mb-3">
                   <h3 className="font-semibold text-orange-400 truncate">
                     {transcript.ticket_id}
                   </h3>
-                  <span className="text-xs text-gray-400 bg-gray-600 px-2 py-1 rounded">
+                  <span className="text-xs text-gray-400 bg-gray-700/70 px-2 py-1 rounded">
                     {transcript.html_length} chr
                   </span>
                 </div>
 
                 <div className="space-y-2 text-sm text-gray-300">
                   <div className="flex items-center">
-                    <Code className="h-4 w-4 mr-2 text-gray-400" />
+                    <Code className="h-4 w-4 mr-2 text-gray-400 group-hover:text-orange-400 transition-colors" />
                     <span className="truncate">HTML Transcript</span>
                   </div>
 
                   <div className="flex items-center">
-                    <Calendar className="h-4 w-4 mr-2 text-gray-400" />
+                    <Calendar className="h-4 w-4 mr-2 text-gray-400 group-hover:text-orange-400 transition-colors" />
                     <span>{formatDate(transcript.created_at)}</span>
                   </div>
                 </div>

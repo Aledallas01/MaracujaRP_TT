@@ -3,7 +3,7 @@ import { AlertCircle, ArrowLeft } from "lucide-react";
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-950 to-gray-900 p-6">
+    <div className="min-h-screen flex items-center justify-center p-6">
       <div className="max-w-md w-full text-center space-y-8 animate-fade-in">
         {/* Icona di errore */}
         <div className="mx-auto h-20 w-20 bg-red-900/40 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg shadow-red-900/40">

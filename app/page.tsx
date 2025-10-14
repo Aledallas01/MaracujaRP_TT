@@ -55,7 +55,7 @@ export default function HomePage() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-950 to-gray-900 p-6 text-white space-y-10">
+    <div className="min-h-screen p-6 text-white space-y-10">
       {/* Header */}
       <div className="text-center space-y-2">
         <h1 className="text-3xl font-extrabold tracking-tight">
@@ -122,9 +122,6 @@ export default function HomePage() {
                   <h3 className="font-semibold text-orange-400 truncate">
                     {transcript.ticket_id}
                   </h3>
-                  <span className="text-xs text-gray-400 bg-gray-700/70 px-2 py-1 rounded">
-                    {transcript.html_length} chr
-                  </span>
                 </div>
 
                 <div className="space-y-2 text-sm text-gray-300">

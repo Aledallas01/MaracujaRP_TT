@@ -34,30 +34,32 @@ export default function HomePage() {
 
   const checkUserRole = async () => {
     try {
-      // Nota: Dovrai fornire l'ID del server Discord come parametro
-      // Per ora, impostiamo hasAdminRole a false e recuperiamo solo i transcript dell'utente
-      // Se vuoi implementare il controllo del ruolo, dovrai aggiungere l'ID del guild
       const guildId = process.env.NEXT_PUBLIC_DISCORD_GUILD_ID;
+      let isAdmin = false;
 
       if (guildId) {
         const response = await fetch(`/api/check-role?guildId=${guildId}`);
         if (response.ok) {
           const data = await response.json();
-          setHasAdminRole(data.hasAdminRole || false);
+          isAdmin = data.hasAdminRole || false;
+          setHasAdminRole(isAdmin);
         }
       }
+
+      // Passiamo direttamente il valore al fetch dei transcript
+      fetchTranscripts(isAdmin);
     } catch (error) {
       console.error("Error checking role:", error);
+      fetchTranscripts(false);
     } finally {
       setCheckingRole(false);
-      fetchTranscripts();
     }
   };
 
-  const fetchTranscripts = async () => {
+  const fetchTranscripts = async (isAdminParam: boolean) => {
     try {
       const response = await fetch(
-        `/api/get-transcripts?hasAdminRole=${hasAdminRole}`
+        `/api/get-transcripts?hasAdminRole=${isAdminParam}`
       );
       if (response.status === 401) {
         router.push("/login");

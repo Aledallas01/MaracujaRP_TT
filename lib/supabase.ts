@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from "@supabase/supabase-js";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -25,13 +25,13 @@ export interface Transcript {
 // Helper function to get transcript by ticket ID
 export async function getTranscriptByTicketId(ticketId: string) {
   const { data, error } = await supabase
-    .from('transcripts')
-    .select('*')
-    .eq('ticket_id', ticketId)
+    .from("transcripts")
+    .select("*")
+    .eq("ticket_id", ticketId)
     .single();
 
   if (error) {
-    console.error('Error fetching transcript:', error);
+    console.error("Error fetching transcript:", error);
     return null;
   }
 
@@ -41,12 +41,12 @@ export async function getTranscriptByTicketId(ticketId: string) {
 // Helper function to get all transcripts
 export async function getAllTranscripts() {
   const { data, error } = await supabase
-    .from('transcripts')
-    .select('*')
-    .order('created_at', { ascending: false });
+    .from("transcripts")
+    .select("*")
+    .order("created_at", { ascending: false });
 
   if (error) {
-    console.error('Error fetching transcripts:', error);
+    console.error("Error fetching transcripts:", error);
     return [];
   }
 
@@ -60,14 +60,14 @@ export async function createTranscript(transcriptData: {
   messages: Message[];
 }) {
   const { data, error } = await supabase
-    .from('transcripts')
+    .from("transcripts")
     .insert([transcriptData])
     .select()
     .single();
 
   if (error) {
-    console.error('Error creating transcript:', error);
-    throw new Error('Failed to create transcript');
+    console.error("Error creating transcript:", error);
+    throw new Error("Failed to create transcript");
   }
 
   return data as Transcript;

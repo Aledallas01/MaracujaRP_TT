@@ -1,7 +1,9 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Calendar } from "lucide-react";
 import { createClient } from "@supabase/supabase-js";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../../api/auth/[...nextauth]/route";
 
 export const dynamic = "force-dynamic";
 
@@ -10,6 +12,7 @@ interface Transcript {
   ticket_id: string;
   created_at: string;
   html_content: string;
+  creator_id?: string;
 }
 
 // Supabase client con SERVICE ROLE KEY (server-only)
@@ -18,7 +21,11 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-async function getTranscript(ticketId: string): Promise<Transcript | null> {
+async function getTranscript(
+  ticketId: string,
+  userId: string,
+  hasAdminRole: boolean
+): Promise<Transcript | null> {
   const { data, error } = await supabase
     .from("transcripts")
     .select("*")
@@ -29,7 +36,27 @@ async function getTranscript(ticketId: string): Promise<Transcript | null> {
     console.error("Transcript fetch error:", error);
     return null;
   }
+
+  // Verifica permessi: l'utente deve essere il creatore o avere ruolo admin
+  if (!hasAdminRole && data.creator_id !== userId) {
+    return null; // Non autorizzato
+  }
+
   return data;
+}
+
+async function checkUserRole(userId: string): Promise<boolean> {
+  // Per ora ritorniamo false, ma puoi implementare la logica di verifica ruolo qui
+  // oppure passarlo come parametro dalla query string
+  const guildId = process.env.NEXT_PUBLIC_DISCORD_GUILD_ID;
+
+  if (!guildId) {
+    return false;
+  }
+
+  // In un'implementazione reale, dovresti chiamare l'API Discord qui
+  // Per semplicità, ritorniamo false (utente normale)
+  return false;
 }
 
 export default async function TranscriptPage({
@@ -37,7 +64,17 @@ export default async function TranscriptPage({
 }: {
   params: { ticketId: string };
 }) {
-  const transcript = await getTranscript(params.ticketId);
+  // 🔒 Controllo autenticazione
+  const session = await getServerSession(authOptions);
+
+  if (!session || !session.user) {
+    redirect("/login");
+  }
+
+  const userId = session.user.discordId;
+  const hasAdminRole = await checkUserRole(userId);
+
+  const transcript = await getTranscript(params.ticketId, userId, hasAdminRole);
 
   if (!transcript) {
     notFound();

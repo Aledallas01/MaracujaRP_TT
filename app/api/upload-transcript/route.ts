@@ -42,11 +42,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { ticketId, htmlContent } = body;
+    const { ticketId, htmlContent, creatorId } = body;
 
     if (!ticketId || !htmlContent) {
       return NextResponse.json(
         { success: false, message: "ticketId e htmlContent sono richiesti" },
+        { status: 400 }
+      );
+    }
+
+    if (!creatorId) {
+      return NextResponse.json(
+        { success: false, message: "creatorId è richiesto" },
         { status: 400 }
       );
     }
@@ -66,13 +73,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 4️⃣ Inserisci o aggiorna transcript con HTML
+    // 4️⃣ Inserisci o aggiorna transcript con HTML e creator_id
     let upsertResult;
     if (existingTranscript) {
       // Aggiorna il transcript esistente
       const { data, error } = await supabase
         .from("transcripts")
-        .update({ html_content: htmlContent })
+        .update({ html_content: htmlContent, creator_id: creatorId })
         .eq("ticket_id", ticketId)
         .select()
         .single();
@@ -81,7 +88,13 @@ export async function POST(request: NextRequest) {
       // Inserisci nuovo transcript
       const { data, error } = await supabase
         .from("transcripts")
-        .insert([{ ticket_id: ticketId, html_content: htmlContent }])
+        .insert([
+          {
+            ticket_id: ticketId,
+            html_content: htmlContent,
+            creator_id: creatorId,
+          },
+        ])
         .select()
         .single();
       upsertResult = { data, error };

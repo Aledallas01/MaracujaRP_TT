@@ -2,7 +2,9 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { FileText, Calendar, Code, Search } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { FileText, Calendar, Code, Search, Shield } from "lucide-react";
 
 interface Transcript {
   id: string;
@@ -10,20 +12,57 @@ interface Transcript {
   created_at: string;
   html_content: string;
   html_length?: number;
+  creator_id?: string;
 }
 
 export default function HomePage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const [transcripts, setTranscripts] = useState<Transcript[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [hasAdminRole, setHasAdminRole] = useState(false);
+  const [checkingRole, setCheckingRole] = useState(true);
 
   useEffect(() => {
-    fetchTranscripts();
-  }, []);
+    if (status === "unauthenticated") {
+      router.push("/login");
+    } else if (status === "authenticated") {
+      checkUserRole();
+    }
+  }, [status, router]);
+
+  const checkUserRole = async () => {
+    try {
+      // Nota: Dovrai fornire l'ID del server Discord come parametro
+      // Per ora, impostiamo hasAdminRole a false e recuperiamo solo i transcript dell'utente
+      // Se vuoi implementare il controllo del ruolo, dovrai aggiungere l'ID del guild
+      const guildId = process.env.NEXT_PUBLIC_DISCORD_GUILD_ID;
+
+      if (guildId) {
+        const response = await fetch(`/api/check-role?guildId=${guildId}`);
+        if (response.ok) {
+          const data = await response.json();
+          setHasAdminRole(data.hasAdminRole || false);
+        }
+      }
+    } catch (error) {
+      console.error("Error checking role:", error);
+    } finally {
+      setCheckingRole(false);
+      fetchTranscripts();
+    }
+  };
 
   const fetchTranscripts = async () => {
     try {
-      const response = await fetch("/api/get-transcripts");
+      const response = await fetch(
+        `/api/get-transcripts?hasAdminRole=${hasAdminRole}`
+      );
+      if (response.status === 401) {
+        router.push("/login");
+        return;
+      }
       if (response.ok) {
         const data = await response.json();
         const transcriptsWithInfo =
@@ -54,6 +93,23 @@ export default function HomePage() {
     t.ticket_id.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Mostra loading durante il controllo della sessione
+  if (status === "loading" || checkingRole) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-400"></div>
+          <p className="text-gray-400">Caricamento...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Se non autenticato, non mostrare nulla (verrà reindirizzato)
+  if (!session) {
+    return null;
+  }
+
   return (
     <div className="min-h-screen p-6 text-white space-y-10">
       {/* Header */}
@@ -62,8 +118,16 @@ export default function HomePage() {
           📄 Transcript Disponibili
         </h1>
         <p className="text-gray-400 text-sm">
-          Visualizza tutti i transcript salvati nel sistema.
+          {hasAdminRole
+            ? "Visualizza tutti i transcript salvati nel sistema (Modalità Admin)"
+            : "Visualizza i tuoi transcript"}
         </p>
+        {hasAdminRole && (
+          <div className="inline-flex items-center gap-2 bg-orange-500/20 border border-orange-500/50 text-orange-300 px-4 py-2 rounded-lg mt-2">
+            <Shield className="h-4 w-4" />
+            <span className="text-sm font-medium">Accesso Amministratore</span>
+          </div>
+        )}
       </div>
 
       {/* Barra di ricerca */}

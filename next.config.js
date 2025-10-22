@@ -6,9 +6,9 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  images: { 
+  images: {
     unoptimized: true,
-    domains: ['images.pexels.com']
+    domains: ["images.pexels.com"],
   },
   webpack: (config, { isServer }) => {
     if (!isServer) {

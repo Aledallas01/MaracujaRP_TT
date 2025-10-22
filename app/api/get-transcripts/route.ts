@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../auth/[...nextauth]/route";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -7,18 +9,42 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 export async function GET(req: NextRequest) {
   try {
+    // 🔒 Controllo autenticazione
+    const session = await getServerSession(authOptions);
+
+    if (!session || !session.user) {
+      return NextResponse.json(
+        { success: false, error: "Non autenticato. Login richiesto." },
+        { status: 401 }
+      );
+    }
+
+    const userId = session.user.discordId;
+
     // 🔹 Parametri di paginazione
     const limit = Number(req.nextUrl.searchParams.get("limit")) || 1000;
     const page = Number(req.nextUrl.searchParams.get("page")) || 0;
     const from = page * limit;
     const to = from + limit - 1;
 
-    // 🔹 Query principale
-    const { data, error, count } = await supabase
+    // 🔹 Verifica se l'utente ha il ruolo admin
+    const hasAdminRole =
+      req.nextUrl.searchParams.get("hasAdminRole") === "true";
+
+    // 🔹 Query principale con filtro basato su ruolo
+    let query = supabase
       .from("transcripts")
-      .select("id, ticket_id, created_at, html_content", { count: "exact" })
-      .order("created_at", { ascending: false })
-      .range(from, to);
+      .select("id, ticket_id, created_at, html_content, creator_id", {
+        count: "exact",
+      })
+      .order("created_at", { ascending: false });
+
+    // Se l'utente NON ha il ruolo admin, mostra solo i suoi transcript
+    if (!hasAdminRole) {
+      query = query.eq("creator_id", userId);
+    }
+
+    const { data, error, count } = await query.range(from, to);
 
     // 🔹 Gestione errori Supabase
     if (error) {

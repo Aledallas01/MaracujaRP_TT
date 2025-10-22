@@ -9,6 +9,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 export async function GET(req: NextRequest) {
   try {
+    // 🔒 Controllo autenticazione
     const session = await getServerSession(authOptions);
 
     if (!session || !session.user) {
@@ -26,10 +27,16 @@ export async function GET(req: NextRequest) {
     const from = page * limit;
     const to = from + limit - 1;
 
-    // 🔹 Controlla il ruolo direttamente dalla sessione (supponendo che tu salvi admin lì)
-    const isAdmin = session.user.role === "admin"; // o session.user.isAdmin = true
+    // 🔹 Controllo ruolo admin tramite API Discord
+    const guildId = process.env.DISCORD_GUILD_ID; // oppure passalo come query param se vuoi
+    const roleCheckRes = await fetch(
+      `${req.nextUrl.origin}/api/check-role?guildId=${guildId}`,
+      { headers: { cookie: req.headers.get("cookie") || "" } }
+    );
+    const roleCheckData = await roleCheckRes.json();
+    const isAdmin = roleCheckData.hasAdminRole === true;
 
-    // 🔹 Query principale
+    // 🔹 Query principale con filtro basato su ruolo
     let query = supabase
       .from("transcripts")
       .select("id, ticket_id, created_at, html_content, creator_id", {
@@ -37,13 +44,14 @@ export async function GET(req: NextRequest) {
       })
       .order("created_at", { ascending: false });
 
-    // Se NON è admin, mostra solo i suoi transcript
+    // Se l'utente NON è admin, mostra solo i suoi transcript
     if (!isAdmin) {
       query = query.eq("creator_id", userId);
     }
 
     const { data, error, count } = await query.range(from, to);
 
+    // 🔹 Gestione errori Supabase
     if (error) {
       console.error("Supabase error:", error.message, error.details);
       return NextResponse.json(
@@ -52,15 +60,28 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const transcriptsWithInfo = (data || []).map((t) => ({
+    // 🔹 Se nessun dato trovato
+    if (!data || data.length === 0) {
+      return NextResponse.json({
+        success: true,
+        transcripts: [],
+        count: 0,
+        page,
+        totalPages: 0,
+      });
+    }
+
+    // 🔹 Aggiunge info utili (es. lunghezza HTML)
+    const transcriptsWithInfo = data.map((t) => ({
       ...t,
       html_length: t.html_content?.length || 0,
     }));
 
+    // 🔹 Risposta finale
     return NextResponse.json({
       success: true,
       transcripts: transcriptsWithInfo,
-      count: count || 0,
+      count,
       page,
       totalPages: Math.ceil((count || 0) / limit),
     });

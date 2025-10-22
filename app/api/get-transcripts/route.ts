@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
     const to = from + limit - 1;
 
     // 🔹 Controllo ruolo admin tramite API Discord
-    const guildId = process.env.DISCORD_GUILD_ID; // oppure passalo come query param se vuoi
+    const guildId = process.env.NEXT_PUBLIC_DISCORD_GUILD_ID; // oppure passalo come query param se vuoi
     const roleCheckRes = await fetch(
       `${req.nextUrl.origin}/api/check-role?guildId=${guildId}`,
       { headers: { cookie: req.headers.get("cookie") || "" } }

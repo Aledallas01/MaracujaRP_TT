@@ -88,13 +88,11 @@ export async function POST(request: NextRequest) {
       // Inserisci nuovo transcript
       const { data, error } = await supabase
         .from("transcripts")
-        .insert([
-          {
-            ticket_id: ticketId,
-            html_content: htmlContent,
-            creator_id: creatorId,
-          },
-        ])
+        .insert([{ 
+          ticket_id: ticketId, 
+          html_content: htmlContent,
+          creator_id: creatorId 
+        }])
         .select()
         .single();
       upsertResult = { data, error };

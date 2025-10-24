@@ -23,6 +23,7 @@ export async function GET(
     }
 
     const userId = session.user.discordId;
+    const isAdmin = session.hasAdminRole || false;
     const { ticketId } = params;
 
     if (!ticketId) {
@@ -31,15 +32,6 @@ export async function GET(
         { status: 400 }
       );
     }
-
-    // 🔹 Controllo ruolo admin tramite API Discord
-    const guildId = process.env.NEXT_PUBLIC_DISCORD_GUILD_ID;
-    const roleCheckRes = await fetch(
-      `${req.nextUrl.origin}/api/check-role?guildId=${guildId}`,
-      { headers: { cookie: req.headers.get("cookie") || "" } }
-    );
-    const roleCheckData = await roleCheckRes.json();
-    const isAdmin = roleCheckData.hasAdminRole === true;
 
     // 🔹 Query transcript
     const { data, error } = await supabase

@@ -8,6 +8,7 @@ declare module "next-auth" {
       discordId: string;
     } & DefaultSession["user"];
     accessToken?: string;
+    hasAdminRole?: boolean;
   }
 
   interface User extends DefaultUser {
@@ -20,5 +21,6 @@ declare module "next-auth/jwt" {
   interface JWT extends DefaultJWT {
     accessToken?: string;
     discordId?: string;
+    hasAdminRole?: boolean;
   }
 }

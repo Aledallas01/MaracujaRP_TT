@@ -8,15 +8,13 @@ Guida rapida per mettere in funzione l'applicazione in 5 minuti.
 
 ### 1️⃣ Crea Applicazione Discord (5 min)
 
-1. Vai su https://discord.com/developers/applications
+1. Vai su `https://discord.com/developers/applications`
 2. Click **"New Application"** → Dai un nome → **"Create"**
 3. Vai su **"OAuth2"** → **"General"**
 4. Copia il **Client ID**
 5. Click **"Reset Secret"** → Copia il **Client Secret** (salvalo!)
 6. In **"Redirects"** aggiungi:
-   ```
-   http://localhost:3000/api/auth/callback/discord
-   ```
+   `http://localhost:3000/api/auth/callback/discord`
 
 ---
 
@@ -73,7 +71,7 @@ Copia l'output e sostituisci il valore nel file `.env.local`
 
 ### 4️⃣ Aggiorna Database Supabase (1 min)
 
-1. Vai su https://supabase.com → Tuo progetto
+1. Vai su `https://supabase.com` → Tuo progetto
 2. Apri **SQL Editor**
 3. Copia e esegui questo SQL:
 
@@ -87,7 +85,10 @@ CREATE INDEX IF NOT EXISTS idx_transcripts_creator_id
 ON transcripts(creator_id);
 ```
 
+<!-- markdownlint-disable MD029 -->
+
 4. Click **"Run"** ✅
+<!-- markdownlint-enable MD029 -->
 
 ---
 
@@ -101,7 +102,7 @@ cd /app
 yarn dev
 ```
 
-Apri browser su: **http://localhost:3000**
+Apri browser su: **`http://localhost:3000`**
 
 ---
 
@@ -109,7 +110,7 @@ Apri browser su: **http://localhost:3000**
 
 ### Test 1: Login
 
-1. Apri http://localhost:3000
+1. Apri `http://localhost:3000`
 2. Dovresti vedere la pagina di login
 3. Click **"Accedi con Discord"**
 4. Autorizza l'app
@@ -137,14 +138,14 @@ Sostituisci:
 
 ## 🎯 Verifica Ruoli
 
-### Come Admin (vede tutto):
+### Come Admin (vede tutto)
 
 1. Assicurati di avere il ruolo configurato in `DISCORD_ADMIN_ROLE_ID`
 2. Login con Discord
 3. Dovresti vedere il badge **"Accesso Amministratore"**
 4. Vedrai **tutti i transcript** nel sistema
 
-### Come Utente Normale:
+### Come Utente Normale
 
 1. Login con account senza il ruolo admin
 2. Vedrai **solo i tuoi transcript** (quelli con tuo creator_id)
@@ -213,7 +214,7 @@ Per maggiori dettagli:
 
 ---
 
-## 🎉 Fatto!
+## 🎉 Fatto
 
 Se tutto funziona, vedrai:
 

@@ -20,21 +20,13 @@ export async function GET(req: NextRequest) {
     }
 
     const userId = session.user.discordId;
+    const isAdmin = session.hasAdminRole || false;
 
     // 🔹 Parametri di paginazione
     const limit = Number(req.nextUrl.searchParams.get("limit")) || 1000;
     const page = Number(req.nextUrl.searchParams.get("page")) || 0;
     const from = page * limit;
     const to = from + limit - 1;
-
-    // 🔹 Controllo ruolo admin tramite API Discord
-    const guildId = process.env.NEXT_PUBLIC_DISCORD_GUILD_ID; // oppure passalo come query param se vuoi
-    const roleCheckRes = await fetch(
-      `${req.nextUrl.origin}/api/check-role?guildId=${guildId}`,
-      { headers: { cookie: req.headers.get("cookie") || "" } }
-    );
-    const roleCheckData = await roleCheckRes.json();
-    const isAdmin = roleCheckData.hasAdminRole === true;
 
     // 🔹 Query principale con filtro basato su ruolo
     let query = supabase

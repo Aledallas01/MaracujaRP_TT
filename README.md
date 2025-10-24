@@ -96,7 +96,7 @@ Carica un nuovo transcript o aggiorna uno esistente.
 
 **Headers:**
 
-```
+```bash
 Authorization: Bearer YOUR_API_KEY
 Content-Type: application/json
 ```
@@ -158,7 +158,7 @@ yarn lint
 
 ## 📦 Struttura Progetto
 
-```
+```bash
 /app
 ├── app/
 │   ├── api/

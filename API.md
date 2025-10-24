@@ -6,13 +6,13 @@ Esempi di utilizzo delle API con il nuovo sistema di autenticazione.
 
 ### Endpoint
 
-```
+```bash
 POST /api/upload-transcript
 ```
 
 ### Headers
 
-```
+```bash
 Authorization: Bearer YOUR_API_KEY
 Content-Type: application/json
 ```
@@ -63,13 +63,13 @@ curl -X POST https://your-domain.com/api/upload-transcript \
 
 ## 📋 Get All Transcripts (Richiede Autenticazione)
 
-### Endpoint
+### Endpoint (get-transcripts)
 
-```
+```bash
 GET /api/get-transcripts
 ```
 
-### Query Parameters
+### Query Parameters (get-transcripts)
 
 - `hasAdminRole` (boolean): Se true, restituisce tutti i transcript
 - `limit` (number, optional): Numero massimo di risultati (default: 1000)
@@ -77,7 +77,7 @@ GET /api/get-transcripts
 
 ### Headers (Cookie Session - gestito automaticamente dal browser)
 
-```
+```bash
 Cookie: next-auth.session-token=...
 ```
 
@@ -151,19 +151,19 @@ curl -X GET "https://your-domain.com/api/get-transcripts?hasAdminRole=false&limi
 
 ## 🔍 Get Single Transcript
 
-### Endpoint
+### Endpoint (get-transcript)
 
-```
+```bash
 GET /api/get-transcript/[ticketId]
 ```
 
-### Query Parameters
+### Query Parameters (AdminRole)
 
 - `hasAdminRole` (boolean): Se true, bypassa il controllo proprietà
 
 ### Headers (Cookie Session)
 
-```
+```bash
 Cookie: next-auth.session-token=...
 ```
 
@@ -209,9 +209,9 @@ curl -X GET "https://your-domain.com/api/get-transcript/ticket-123?hasAdminRole=
 
 ## 🛡️ Check User Role
 
-### Endpoint
+### Endpoint (check-role)
 
-```
+```bash
 GET /api/check-role
 ```
 
@@ -221,7 +221,7 @@ GET /api/check-role
 
 ### Headers (Cookie Session)
 
-```
+```bash
 Cookie: next-auth.session-token=...
 ```
 

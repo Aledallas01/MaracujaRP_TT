@@ -4,7 +4,14 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { FileText, Calendar, Code, Search, Shield } from "lucide-react";
+import {
+  FileText,
+  Calendar,
+  Code,
+  Search,
+  Shield,
+  Sparkles,
+} from "lucide-react";
 
 interface Transcript {
   id: string;
@@ -22,39 +29,17 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [hasAdminRole, setHasAdminRole] = useState(false);
-  const [checkingRole, setCheckingRole] = useState(true);
 
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/login");
     } else if (status === "authenticated") {
-      checkUserRole();
-    }
-  }, [status, router]);
-
-  const checkUserRole = async () => {
-    try {
-      const guildId = process.env.NEXT_PUBLIC_DISCORD_GUILD_ID;
-      let isAdmin = false;
-
-      if (guildId) {
-        const response = await fetch(`/api/check-role?guildId=${guildId}`);
-        if (response.ok) {
-          const data = await response.json();
-          isAdmin = data.hasAdminRole || false;
-          setHasAdminRole(isAdmin);
-        }
-      }
-
-      // Passiamo direttamente il valore al fetch dei transcript
+      // Ottieni il ruolo dalla sessione
+      const isAdmin = session.hasAdminRole || false;
+      setHasAdminRole(isAdmin);
       fetchTranscripts(isAdmin);
-    } catch (error) {
-      console.error("Error checking role:", error);
-      fetchTranscripts(false);
-    } finally {
-      setCheckingRole(false);
     }
-  };
+  }, [status, router, session]);
 
   const fetchTranscripts = async (isAdminParam: boolean) => {
     try {
@@ -96,12 +81,17 @@ export default function HomePage() {
   );
 
   // Mostra loading durante il controllo della sessione
-  if (status === "loading" || checkingRole) {
+  if (status === "loading") {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-400"></div>
-          <p className="text-gray-400">Caricamento...</p>
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="h-16 w-16 bg-orange-500/20 rounded-full blur-2xl animate-pulse"></div>
+            </div>
+            <div className="relative animate-spin rounded-full h-12 w-12 border-b-2 border-t-2 border-orange-400"></div>
+          </div>
+          <p className="text-gray-400 font-medium">Caricamento...</p>
         </div>
       </div>
     );
@@ -113,65 +103,82 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen p-6 text-white space-y-10">
+    <div className="min-h-screen p-6 text-white space-y-10 animate-fadeIn">
       {/* Header */}
-      <div className="text-center space-y-2">
-        <h1 className="text-3xl font-extrabold tracking-tight">
-          📄 Transcript Disponibili
-        </h1>
-        <p className="text-gray-400 text-sm">
+      <div className="text-center space-y-4">
+        <div className="inline-flex items-center gap-2 mb-2">
+          <Sparkles className="h-6 w-6 text-orange-400 animate-pulse" />
+          <h1 className="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-orange-400 via-red-400 to-orange-400 bg-clip-text text-transparent">
+            Transcript Disponibili
+          </h1>
+          <Sparkles className="h-6 w-6 text-orange-400 animate-pulse" />
+        </div>
+        <p className="text-gray-400 text-base">
           {hasAdminRole
-            ? "Visualizza tutti i transcript salvati nel sistema (Modalità Admin)"
+            ? "Visualizza tutti i transcript salvati nel sistema"
             : "Visualizza i tuoi transcript"}
         </p>
         {hasAdminRole && (
-          <div className="inline-flex items-center gap-2 bg-orange-500/20 border border-orange-500/50 text-orange-300 px-4 py-2 rounded-lg mt-2">
-            <Shield className="h-4 w-4" />
-            <span className="text-sm font-medium">Accesso Amministratore</span>
+          <div className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-500/20 to-red-500/20 border border-orange-500/50 text-orange-300 px-5 py-2.5 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+            <Shield className="h-5 w-5" />
+            <span className="text-sm font-semibold">
+              Accesso Amministratore
+            </span>
           </div>
         )}
       </div>
 
       {/* Barra di ricerca */}
       <div className="max-w-3xl mx-auto">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+        <div className="relative group">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-orange-400 transition-colors" />
           <input
             type="text"
             placeholder="Cerca per Ticket ID..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-gray-900 border border-gray-700 rounded-lg px-10 py-2 text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500"
+            className="w-full bg-gray-900/80 border border-gray-700 rounded-xl px-12 py-3.5 text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all duration-200 backdrop-blur-sm"
+            data-testid="search-input"
           />
         </div>
       </div>
 
       {/* Lista Transcript */}
-      <div className="bg-gray-800/70 rounded-xl p-6 border border-gray-700/60 shadow-lg backdrop-blur-sm max-w-6xl mx-auto">
-        <div className="flex items-center mb-6">
-          <FileText className="h-6 w-6 text-orange-400 mr-2" />
-          <h2 className="text-xl font-semibold">Elenco Transcript</h2>
+      <div className="bg-gradient-to-br from-gray-800/70 to-gray-900/70 rounded-2xl p-8 border border-gray-700/60 shadow-2xl backdrop-blur-sm max-w-6xl mx-auto">
+        <div className="flex items-center mb-8">
+          <FileText className="h-7 w-7 text-orange-400 mr-3" />
+          <h2 className="text-2xl font-bold">Elenco Transcript</h2>
         </div>
 
         {loading ? (
-          <div className="flex items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-400"></div>
-            <span className="ml-3 text-gray-400">
+          <div className="flex items-center justify-center py-12">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="h-12 w-12 bg-orange-500/20 rounded-full blur-xl animate-pulse"></div>
+              </div>
+              <div className="relative animate-spin rounded-full h-10 w-10 border-b-2 border-orange-400"></div>
+            </div>
+            <span className="ml-4 text-gray-400 font-medium">
               Caricamento transcript...
             </span>
           </div>
         ) : filteredTranscripts.length === 0 ? (
-          <div className="text-center py-12 text-gray-400">
-            <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p className="text-lg font-medium">Nessun transcript trovato</p>
+          <div className="text-center py-16 text-gray-400">
+            <FileText className="h-16 w-16 mx-auto mb-6 opacity-30" />
+            <p className="text-xl font-semibold mb-2">
+              Nessun transcript trovato
+            </p>
             {searchQuery && (
-              <p className="text-sm mt-2 opacity-80">
+              <p className="text-sm mt-3 opacity-80">
                 Nessun risultato per "
-                <span className="font-semibold">{searchQuery}</span>"
+                <span className="font-semibold text-orange-400">
+                  {searchQuery}
+                </span>
+                "
               </p>
             )}
             {!searchQuery && (
-              <p className="text-sm mt-2 opacity-80">
+              <p className="text-sm mt-3 opacity-80">
                 Non ci sono ancora transcript caricati nel sistema.
               </p>
             )}
@@ -182,15 +189,17 @@ export default function HomePage() {
               <Link
                 key={transcript.id}
                 href={`/transcript/${transcript.ticket_id}`}
-                className="group bg-gray-900/60 border border-gray-700 rounded-lg p-5 hover:border-orange-500 hover:bg-gray-800 transition-all duration-200 shadow-md hover:shadow-lg hover:-translate-y-1"
+                className="group bg-gradient-to-br from-gray-900/80 to-gray-950/80 border border-gray-700 rounded-xl p-6 hover:border-orange-500 hover:from-gray-800 hover:to-gray-900 transition-all duration-300 shadow-lg hover:shadow-2xl hover:-translate-y-2 backdrop-blur-sm"
+                data-testid={`transcript-card-${transcript.ticket_id}`}
               >
-                <div className="flex items-start justify-between mb-3">
-                  <h3 className="font-semibold text-orange-400 truncate">
+                <div className="flex items-start justify-between mb-4">
+                  <h3 className="font-bold text-lg text-orange-400 group-hover:text-orange-300 truncate transition-colors">
                     {transcript.ticket_id}
                   </h3>
+                  <div className="w-2 h-2 bg-orange-400 rounded-full group-hover:scale-150 transition-transform"></div>
                 </div>
 
-                <div className="space-y-2 text-sm text-gray-300">
+                <div className="space-y-3 text-sm text-gray-300">
                   <div className="flex items-center">
                     <Code className="h-4 w-4 mr-2 text-gray-400 group-hover:text-orange-400 transition-colors" />
                     <span className="truncate">HTML Transcript</span>

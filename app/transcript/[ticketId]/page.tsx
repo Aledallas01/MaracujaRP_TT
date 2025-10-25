@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Calendar, Shield } from "lucide-react";
 import { createClient } from "@supabase/supabase-js";
@@ -55,25 +55,9 @@ export default async function TranscriptPage({
 
   const transcript = await getTranscript(params.ticketId);
 
-  // Se il transcript non esiste
+  // Se il transcript non esiste, mostra _not-found.tsx
   if (!transcript) {
-    return (
-      <div className="min-h-[60vh] flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <h1 className="text-2xl font-bold text-white">
-            Transcript Non Trovato
-          </h1>
-          <p className="text-gray-400">Il transcript richiesto non esiste.</p>
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 text-orange-400 hover:text-orange-300 transition-colors"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            <span>Torna alla lista</span>
-          </Link>
-        </div>
-      </div>
-    );
+    notFound();
   }
 
   // 🔒 Controllo permessi: solo admin o creatore del ticket

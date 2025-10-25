@@ -118,9 +118,10 @@ export default async function TranscriptPage({
         </h1>
         <div className="flex items-center space-x-2 text-sm text-gray-400">
           <Calendar className="h-4 w-4 text-orange-400" />
-          <span>Creato da {transcript.creator_name}</span>
-          <br />
-          <span>Creato il {formatDate(transcript.created_at)}</span>
+          <span>
+            Creato da {transcript.creator_name}, il{" "}
+            {formatDate(transcript.created_at)}
+          </span>
         </div>
       </div>
 
@@ -139,7 +140,9 @@ export default async function TranscriptPage({
             Transcript generato il {formatDate(transcript.created_at)}
           </span>
           <span>•</span>
-          <span className="text-orange-400 font-medium">MaracujaRP</span>
+          <span className="text-orange-400 font-medium">
+            {transcript.creator_name}
+          </span>
         </p>
       </div>
     </div>

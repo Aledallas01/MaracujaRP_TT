@@ -20,6 +20,7 @@ export interface Transcript {
   messages: Message[];
   created_at: string;
   updated_at?: string;
+  creator_name?: string;
 }
 
 // Helper function to get transcript by ticket ID

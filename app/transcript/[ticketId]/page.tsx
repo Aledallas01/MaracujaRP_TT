@@ -14,6 +14,7 @@ interface Transcript {
   created_at: string;
   html_content: string;
   creator_id?: string;
+  creator_name?: string;
 }
 
 // Supabase client con SERVICE ROLE KEY (server-only)
@@ -117,6 +118,8 @@ export default async function TranscriptPage({
         </h1>
         <div className="flex items-center space-x-2 text-sm text-gray-400">
           <Calendar className="h-4 w-4 text-orange-400" />
+          <span>Creato da {transcript.creator_name}</span>
+          <br />
           <span>Creato il {formatDate(transcript.created_at)}</span>
         </div>
       </div>

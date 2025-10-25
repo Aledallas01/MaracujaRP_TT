@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import {
   FileText,
   Calendar,
-  Code,
+  User,
   Search,
   Shield,
   Sparkles,
@@ -20,6 +20,7 @@ interface Transcript {
   html_content: string;
   html_length?: number;
   creator_id?: string;
+  creator_name?: string;
 }
 
 export default function HomePage() {
@@ -201,8 +202,8 @@ export default function HomePage() {
 
                 <div className="space-y-3 text-sm text-gray-300">
                   <div className="flex items-center">
-                    <Code className="h-4 w-4 mr-2 text-gray-400 group-hover:text-orange-400 transition-colors" />
-                    <span className="truncate">HTML Transcript</span>
+                    <User className="h-4 w-4 mr-2 text-gray-400 group-hover:text-orange-400 transition-colors" />
+                    <span className="truncate">{transcript.creator_name}</span>
                   </div>
 
                   <div className="flex items-center">

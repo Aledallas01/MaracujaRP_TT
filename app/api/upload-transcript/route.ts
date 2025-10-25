@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { ticketId, htmlContent, creatorId } = body;
+    const { ticketId, htmlContent, stats, creatorId, creatorName } = body;
 
     if (!ticketId || !htmlContent) {
       return NextResponse.json(
@@ -54,6 +54,13 @@ export async function POST(request: NextRequest) {
     if (!creatorId) {
       return NextResponse.json(
         { success: false, message: "creatorId è richiesto" },
+        { status: 400 }
+      );
+    }
+
+    if (!creatorName) {
+      return NextResponse.json(
+        { success: false, message: "creatorName è richiesto" },
         { status: 400 }
       );
     }
@@ -79,7 +86,11 @@ export async function POST(request: NextRequest) {
       // Aggiorna il transcript esistente
       const { data, error } = await supabase
         .from("transcripts")
-        .update({ html_content: htmlContent, creator_id: creatorId })
+        .update({
+          html_content: htmlContent,
+          creator_id: creatorId,
+          creator_name: creatorName,
+        })
         .eq("ticket_id", ticketId)
         .select()
         .single();
@@ -93,6 +104,7 @@ export async function POST(request: NextRequest) {
             ticket_id: ticketId,
             html_content: htmlContent,
             creator_id: creatorId,
+            creator_name: creatorName,
           },
         ])
         .select()

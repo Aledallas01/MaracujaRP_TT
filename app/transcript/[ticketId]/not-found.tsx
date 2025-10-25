@@ -1,7 +1,5 @@
-export const dynamic = "force-dynamic";
-
 import Link from "next/link";
-import { AlertCircle, ArrowLeft, FileText, Info } from "lucide-react";
+import { AlertCircle, ArrowLeft, Info } from "lucide-react";
 
 export default function NotFound() {
   return (
@@ -30,10 +28,7 @@ export default function NotFound() {
             Possibili cause:
           </h2>
           <ul className="text-left text-sm text-gray-300 space-y-2 leading-relaxed">
-            <li>
-              • L'ID del ticket è stato inserito in modo errato{" "}
-              <FileText className="inline h-4 w-4 text-orange-400 ml-1" />
-            </li>
+            <li>• L'ID del ticket è stato inserito in modo errato</li>
             <li>• Il transcript non è ancora stato caricato nel sistema</li>
             <li>• Il ticket è stato eliminato o archiviato</li>
           </ul>

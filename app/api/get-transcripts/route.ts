@@ -31,9 +31,12 @@ export async function GET(req: NextRequest) {
     // 🔹 Query principale con filtro basato su ruolo
     let query = supabase
       .from("transcripts")
-      .select("id, ticket_id, created_at, html_content, creator_id", {
-        count: "exact",
-      })
+      .select(
+        "id, ticket_id, created_at, html_content, creator_id, creator_name",
+        {
+          count: "exact",
+        }
+      )
       .order("created_at", { ascending: false });
 
     // Se l'utente NON è admin, mostra solo i suoi transcript
